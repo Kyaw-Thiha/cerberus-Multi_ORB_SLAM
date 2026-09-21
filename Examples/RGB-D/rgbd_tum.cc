@@ -99,10 +99,10 @@ int main(int argc, char **argv)//用法: 0程序位置,1字典位置,2yaml文件
     for(int ni=0; ni<nImages; ni++)
     {
         // Read image and depthmap from file (argv[3]是序列集位置)
-        imRGB = cv::imread(string(argv[3])+"/"+vstrImageFilenamesRGB[ni],CV_LOAD_IMAGE_UNCHANGED);
-        imD = cv::imread(string(argv[3])+"/"+vstrImageFilenamesD[ni],CV_LOAD_IMAGE_UNCHANGED);
-        imRGB2 = cv::imread(string(argv[3])+"/"+vstrImageFilenamesRGB2[ni],CV_LOAD_IMAGE_UNCHANGED);
-        imD2 = cv::imread(string(argv[3])+"/"+vstrImageFilenamesD2[ni],CV_LOAD_IMAGE_UNCHANGED);
+        imRGB = cv::imread(string(argv[3])+"/"+vstrImageFilenamesRGB[ni],cv::IMREAD_UNCHANGED);
+        imD = cv::imread(string(argv[3])+"/"+vstrImageFilenamesD[ni],cv::IMREAD_UNCHANGED);
+        imRGB2 = cv::imread(string(argv[3])+"/"+vstrImageFilenamesRGB2[ni],cv::IMREAD_UNCHANGED);
+        imD2 = cv::imread(string(argv[3])+"/"+vstrImageFilenamesD2[ni],cv::IMREAD_UNCHANGED);
         double tframe = vTimestamps[ni];//时间戳,两相机同一个
 
         if(imRGB.empty())

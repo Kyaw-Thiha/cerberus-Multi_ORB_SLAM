@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.10)
 project(ORB_SLAM2)
 
 IF(NOT CMAKE_BUILD_TYPE)
@@ -12,11 +12,20 @@ MESSAGE("Build type: " ${CMAKE_BUILD_TYPE})
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wall  -O3 -march=native ")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall   -O3 -march=native")
 
-# Check C++11 or C++0x support
+# Check C++ standard support. Eigen 3.4+/5.x (the version available on
+# modern distros) hard-errors at preprocessing time unless compiled with
+# at least C++14 (see Eigen/src/Core/util/Macros.h), so C++11 is no longer
+# sufficient here even though it is all this codebase itself requires.
+# Prefer C++14 and fall back to C++11/C++0x only on much older toolchains.
 include(CheckCXXCompilerFlag)
+CHECK_CXX_COMPILER_FLAG("-std=c++14" COMPILER_SUPPORTS_CXX14)
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
 CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
-if(COMPILER_SUPPORTS_CXX11)
+if(COMPILER_SUPPORTS_CXX14)
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+   add_definitions(-DCOMPILEDWITHC11)
+   message(STATUS "Using flag -std=c++14.")
+elseif(COMPILER_SUPPORTS_CXX11)
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
    add_definitions(-DCOMPILEDWITHC11)
    message(STATUS "Using flag -std=c++11.")
@@ -30,33 +39,50 @@ endif()
 
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 
-#find_package(OpenCV 3.0 QUIET)
-#if(NOT OpenCV_FOUND)
-#   find_package(OpenCV 2.4.3 QUIET)
-#   if(NOT OpenCV_FOUND)
-#      message(FATAL_ERROR "OpenCV > 2.4.3 not found.")
-#   endif()
-#endif()
-
-# by plc
-find_package(OpenCV 2.4.3 QUIET)
+find_package(OpenCV 4 QUIET)
 if(NOT OpenCV_FOUND)
-   message(FATAL_ERROR "OpenCV > 2.4.3 not found.")
+   find_package(OpenCV 3.0 QUIET)
+   if(NOT OpenCV_FOUND)
+      message(FATAL_ERROR "OpenCV > 3.0 not found.")
+   endif()
 endif()
 
-find_package(Eigen3 3.1.0 REQUIRED)
-find_package(Pangolin REQUIRED)
+find_package(Eigen3 3.1.0...<6 REQUIRED)
+# Eigen >= 3.4's CMake package only exports the Eigen3::Eigen imported
+# target and no longer sets the legacy EIGEN3_INCLUDE_DIR variable used
+# throughout this file. Recover it from the target so the rest of this
+# file (and Thirdparty/g2o) keeps working unmodified.
+if(NOT EIGEN3_INCLUDE_DIR AND TARGET Eigen3::Eigen)
+  get_target_property(EIGEN3_INCLUDE_DIR Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
+endif()
+
+# Pangolin (and therefore the interactive map viewer) is optional: it pulls
+# in GL/X11 dependencies that are not available on every build machine
+# (e.g. headless dev/CI hosts). The core tracking/mapping library does not
+# need it, so only enable the viewer sources when it is present.
+find_package(Pangolin QUIET)
+
+if(Pangolin_FOUND)
+  message(STATUS "Pangolin found - building with the interactive map viewer enabled.")
+  add_definitions(-DHAVE_PANGOLIN)
+else()
+  message(WARNING "Pangolin not found - building WITHOUT the interactive map viewer. "
+                   "The core ORB_SLAM2 tracking/mapping library is unaffected; "
+                   "System(..., bUseViewer=true) will fall back to running headless.")
+endif()
 
 include_directories(
 ${PROJECT_SOURCE_DIR}
 ${PROJECT_SOURCE_DIR}/include
 ${EIGEN3_INCLUDE_DIR}
-${Pangolin_INCLUDE_DIRS}
 )
+if(Pangolin_FOUND)
+  include_directories(${Pangolin_INCLUDE_DIRS})
+endif()
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 
-add_library(${PROJECT_NAME} SHARED
+set(ORB_SLAM2_SOURCES
 src/System.cc
 src/Tracking.cc
 src/LocalMapping.cc
@@ -75,18 +101,26 @@ src/Frame.cc
 src/KeyFrameDatabase.cc
 src/Sim3Solver.cc
 src/Initializer.cc
-src/Viewer.cc
 src/g2o_sim3_expmap.cc
 )
 # src/g2o_sim3_expmap.cc include/g2o_sim3_expmap.h
 
+if(Pangolin_FOUND)
+  list(APPEND ORB_SLAM2_SOURCES src/Viewer.cc)
+endif()
+
+add_library(${PROJECT_NAME} SHARED ${ORB_SLAM2_SOURCES})
+
 target_link_libraries(${PROJECT_NAME}
 ${OpenCV_LIBS}
 ${EIGEN3_LIBS}
-${Pangolin_LIBRARIES}
 ${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2/lib/libDBoW2.so
 ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
 )
+
+if(Pangolin_FOUND)
+  target_link_libraries(${PROJECT_NAME} ${Pangolin_LIBRARIES})
+endif()
 
 # Build examples
 

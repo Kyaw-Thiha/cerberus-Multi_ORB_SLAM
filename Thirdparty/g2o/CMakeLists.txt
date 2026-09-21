@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 SET(CMAKE_LEGACY_CYGWIN_WIN32 0)
 
 PROJECT(g2o)
@@ -67,8 +67,15 @@ SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${g2o_C_FLAGS}")
 
 # Find Eigen3
 SET(EIGEN3_INCLUDE_DIR ${G2O_EIGEN3_INCLUDE})
-FIND_PACKAGE(Eigen3 3.1.0 REQUIRED)
-IF(EIGEN3_FOUND)
+FIND_PACKAGE(Eigen3 3.1.0...<6 REQUIRED)
+# Eigen >= 3.4's CMake package only exports the Eigen3::Eigen imported
+# target and no longer sets the legacy EIGEN3_INCLUDE_DIR variable that
+# this file (and the top-level CMakeLists.txt) relies on. Recover it from
+# the target so the rest of this file keeps working unmodified.
+if(NOT EIGEN3_INCLUDE_DIR AND TARGET Eigen3::Eigen)
+  get_target_property(EIGEN3_INCLUDE_DIR Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
+endif()
+IF(EIGEN3_FOUND OR TARGET Eigen3::Eigen)
   SET(G2O_EIGEN3_INCLUDE ${EIGEN3_INCLUDE_DIR} CACHE PATH "Directory of Eigen3")
 ELSE(EIGEN3_FOUND)
   SET(G2O_EIGEN3_INCLUDE "" CACHE PATH "Directory of Eigen3")

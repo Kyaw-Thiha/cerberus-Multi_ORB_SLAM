@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.10)
 project(DBoW2)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wall  -O3 -march=native ")
@@ -24,11 +24,11 @@ set(SRCS_DUTILS
   DUtils/Random.cpp
   DUtils/Timestamp.cpp)
 
-find_package(OpenCV 3.0 QUIET)
+find_package(OpenCV 4 QUIET)
 if(NOT OpenCV_FOUND)
-   find_package(OpenCV 2.4.3 QUIET)
+   find_package(OpenCV 3.0 QUIET)
    if(NOT OpenCV_FOUND)
-      message(FATAL_ERROR "OpenCV > 2.4.3 not found.")
+      message(FATAL_ERROR "OpenCV > 3.0 not found.")
    endif()
 endif()
 

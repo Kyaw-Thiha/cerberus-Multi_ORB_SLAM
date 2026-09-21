@@ -80,8 +80,8 @@ cv::Mat FrameDrawer::DrawFrame()
 
     if(im.channels()<3) //this should be always true
     {
-        cvtColor(im, im, CV_GRAY2BGR); //im转为BGR
-        cvtColor(im_cam2,im_cam2,CV_GRAY2BGR);
+        cvtColor(im, im, cv::COLOR_GRAY2BGR); //im转为BGR
+        cvtColor(im_cam2,im_cam2,cv::COLOR_GRAY2BGR);
     }
     //Draw
     // 当前帧的特征坐标与初始帧的特征点坐标连成线，形成轨迹

@@ -23,7 +23,9 @@
 #include "System.h"
 #include "Converter.h"
 #include <thread>
+#ifdef HAVE_PANGOLIN
 #include <pangolin/pangolin.h>
+#endif
 #include <iomanip>
 
 namespace ORB_SLAM2
@@ -111,12 +113,20 @@ System::System(const string &strVocFile, const string &strSettingsFile,
     mptLoopClosing = new thread(&ORB_SLAM2::LoopClosing::Run, mpLoopCloser);
 
     //Initialize the Viewer thread and launch
+#ifdef HAVE_PANGOLIN
     if(bUseViewer)
     {
         mpViewer = new Viewer(this, mpFrameDrawer,mpMapDrawer,mpTracker,strSettingsFile);
         mptViewer = new thread(&Viewer::Run, mpViewer);
         mpTracker->SetViewer(mpViewer);
     }
+#else
+    if(bUseViewer)
+    {
+        cerr << "System: built without Pangolin support - running headless "
+                "(the requested viewer has been disabled)." << endl;
+    }
+#endif
 
     //Set pointers between threads
     mpTracker->SetLocalMapper(mpLocalMapper);
@@ -329,6 +339,7 @@ void System::Shutdown()
 {
     mpLocalMapper->RequestFinish();
     mpLoopCloser->RequestFinish();
+#ifdef HAVE_PANGOLIN
     if(mpViewer)
     {
         mpViewer->RequestFinish();
@@ -339,6 +350,7 @@ void System::Shutdown()
         delete mpViewer;
         mpViewer = static_cast<Viewer*>(NULL);
     }
+#endif
 
     // Wait until all thread have effectively stopped
     while(!mpLocalMapper->isFinished() || !mpLoopCloser->isFinished() || mpLoopCloser->isRunningGBA())
@@ -346,8 +358,10 @@ void System::Shutdown()
         usleep(5000);
     }
 
+#ifdef HAVE_PANGOLIN
     if(mpViewer)
         pangolin::BindToContext("ORB-SLAM2: Map Viewer");
+#endif
 }
 
 void System::SaveTrajectoryTUM(const string &filename)

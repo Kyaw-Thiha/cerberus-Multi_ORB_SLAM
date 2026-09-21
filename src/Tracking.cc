@@ -36,7 +36,7 @@
 #include<iostream>
 
 #include<mutex>
-#include <cv.h>
+#include <opencv2/opencv.hpp>
 
 
 using namespace std;
@@ -199,26 +199,26 @@ void Tracking::SetViewer(Viewer *pViewer)
 //    {
 //        if(mbRGB)  //rgb或gbr格式
 //        {
-//            cvtColor(mImGray1,mImGray1,CV_RGB2GRAY);
-//            cvtColor(imGrayRight,imGrayRight,CV_RGB2GRAY);
+//            cvtColor(mImGray1,mImGray1,cv::COLOR_RGB2GRAY);
+//            cvtColor(imGrayRight,imGrayRight,cv::COLOR_RGB2GRAY);
 //        }
 //        else
 //        {
-//            cvtColor(mImGray1,mImGray1,CV_BGR2GRAY);
-//            cvtColor(imGrayRight,imGrayRight,CV_BGR2GRAY);
+//            cvtColor(mImGray1,mImGray1,cv::COLOR_BGR2GRAY);
+//            cvtColor(imGrayRight,imGrayRight,cv::COLOR_BGR2GRAY);
 //        }
 //    }
 //    else if(mImGray1.channels()==4)
 //    {
 //        if(mbRGB)
 //        {
-//            cvtColor(mImGray1,mImGray1,CV_RGBA2GRAY);
-//            cvtColor(imGrayRight,imGrayRight,CV_RGBA2GRAY);
+//            cvtColor(mImGray1,mImGray1,cv::COLOR_RGBA2GRAY);
+//            cvtColor(imGrayRight,imGrayRight,cv::COLOR_RGBA2GRAY);
 //        }
 //        else
 //        {
-//            cvtColor(mImGray1,mImGray1,CV_BGRA2GRAY);
-//            cvtColor(imGrayRight,imGrayRight,CV_BGRA2GRAY);
+//            cvtColor(mImGray1,mImGray1,cv::COLOR_BGRA2GRAY);
+//            cvtColor(imGrayRight,imGrayRight,cv::COLOR_BGRA2GRAY);
 //        }
 //    }
 //
@@ -249,26 +249,26 @@ cv::Mat Tracking::GrabImageRGBD(const cv::Mat &imRGB1,const cv::Mat &imD1,
     {
         if(mbRGB)   //rgb或gbr格式
         {
-            cvtColor(mImGray,mImGray,CV_RGB2GRAY);
-            cvtColor(mImGray2,mImGray2,CV_RGB2GRAY);
+            cvtColor(mImGray,mImGray,cv::COLOR_RGB2GRAY);
+            cvtColor(mImGray2,mImGray2,cv::COLOR_RGB2GRAY);
         }
         else
             {
-                cvtColor(mImGray,mImGray,CV_BGR2GRAY);
-                cvtColor(mImGray2,mImGray2,CV_BGR2GRAY);
+                cvtColor(mImGray,mImGray,cv::COLOR_BGR2GRAY);
+                cvtColor(mImGray2,mImGray2,cv::COLOR_BGR2GRAY);
             }
     }
     else if(mImGray.channels()==4)
     {
         if(mbRGB)
         {
-            cvtColor(mImGray,mImGray,CV_RGBA2GRAY);
-            cvtColor(mImGray2,mImGray2,CV_RGBA2GRAY);
+            cvtColor(mImGray,mImGray,cv::COLOR_RGBA2GRAY);
+            cvtColor(mImGray2,mImGray2,cv::COLOR_RGBA2GRAY);
         }
         else
         {
-            cvtColor(mImGray,mImGray,CV_BGRA2GRAY);
-            cvtColor(mImGray2,mImGray2,CV_BGRA2GRAY);
+            cvtColor(mImGray,mImGray,cv::COLOR_BGRA2GRAY);
+            cvtColor(mImGray2,mImGray2,cv::COLOR_BGRA2GRAY);
         }
     }
 
@@ -309,16 +309,16 @@ cv::Mat Tracking::GrabImageRGBD(const cv::Mat &imRGB1,const cv::Mat &imD1,
 //    if(mImGray.channels()==3)
 //    {
 //        if(mbRGB)
-//            cvtColor(mImGray,mImGray,CV_RGB2GRAY);
+//            cvtColor(mImGray,mImGray,cv::COLOR_RGB2GRAY);
 //        else
-//            cvtColor(mImGray,mImGray,CV_BGR2GRAY);
+//            cvtColor(mImGray,mImGray,cv::COLOR_BGR2GRAY);
 //    }
 //    else if(mImGray.channels()==4)
 //    {
 //        if(mbRGB)
-//            cvtColor(mImGray,mImGray,CV_RGBA2GRAY);
+//            cvtColor(mImGray,mImGray,cv::COLOR_RGBA2GRAY);
 //        else
-//            cvtColor(mImGray,mImGray,CV_BGRA2GRAY);
+//            cvtColor(mImGray,mImGray,cv::COLOR_BGRA2GRAY);
 //    }
 //
 //    if(mState==NOT_INITIALIZED || mState==NO_IMAGES_YET)
@@ -2161,12 +2161,14 @@ void Tracking::Reset()
 {
 
     cout << "System Reseting" << endl;
+#ifdef HAVE_PANGOLIN
     if(mpViewer)
     {
         mpViewer->RequestStop();
         while(!mpViewer->isStopped())
             usleep(3000);
     }
+#endif
 
     // Reset Local Mapping
     cout << "Reseting Local Mapper...";
@@ -2201,8 +2203,10 @@ void Tracking::Reset()
     mlFrameTimes.clear();
     mlbLost.clear();
 
+#ifdef HAVE_PANGOLIN
     if(mpViewer)
         mpViewer->Release();
+#endif
 }
 
 void Tracking::ChangeCalibration(const string &strSettingPath)

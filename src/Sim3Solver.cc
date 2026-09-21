@@ -274,7 +274,7 @@ cv::Mat Sim3Solver::find(vector<bool> &vbInliers12, int &nInliers)
 //C 质心
 void Sim3Solver::ComputeCentroid(cv::Mat &P, cv::Mat &Pr, cv::Mat &C)
 {
-    cv::reduce(P,C,1,CV_REDUCE_SUM);//P 各坐标分别求和存在C(xyz竖着排列)中
+    cv::reduce(P,C,1,cv::REDUCE_SUM);//P 各坐标分别求和存在C(xyz竖着排列)中
     C = C/P.cols;//得到质心
 
     for(int i=0; i<P.cols; i++)
