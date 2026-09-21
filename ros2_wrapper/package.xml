@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>multicam_slam_ros2_wrapper</name>
+  <version>0.1.0</version>
+  <description>Minimal ROS2 (ament_cmake) node wrapping the pre-built dual-RGBD Multi_ORB_SLAM (ORB-SLAM2 based) core library</description>
+  <maintainer email="k.thiha10.mail@gmail.com">Kevin</maintainer>
+  <license>GPL-3.0-only</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>cv_bridge</depend>
+  <depend>message_filters</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
