@@ -67,7 +67,7 @@ SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${g2o_C_FLAGS}")
 
 # Find Eigen3
 SET(EIGEN3_INCLUDE_DIR ${G2O_EIGEN3_INCLUDE})
-FIND_PACKAGE(Eigen3 3.1.0...<6 REQUIRED)
+FIND_PACKAGE(Eigen3 3.1.0...<4 REQUIRED)
 # Eigen >= 3.4's CMake package only exports the Eigen3::Eigen imported
 # target and no longer sets the legacy EIGEN3_INCLUDE_DIR variable that
 # this file (and the top-level CMakeLists.txt) relies on. Recover it from

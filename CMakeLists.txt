@@ -47,7 +47,7 @@ if(NOT OpenCV_FOUND)
    endif()
 endif()
 
-find_package(Eigen3 3.1.0...<6 REQUIRED)
+find_package(Eigen3 3.1.0...<4 REQUIRED)
 # Eigen >= 3.4's CMake package only exports the Eigen3::Eigen imported
 # target and no longer sets the legacy EIGEN3_INCLUDE_DIR variable used
 # throughout this file. Recover it from the target so the rest of this
